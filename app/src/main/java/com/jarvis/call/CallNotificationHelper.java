@@ -28,10 +28,17 @@ public final class CallNotificationHelper {
     }
 
     public static void showIncomingCallNotification(Context context) {
+        showIncomingCallNotification(context, "notifikasi full-screen",
+                "Jarvis memanggil",
+                "Ketuk untuk menjawab — atau tunggu layar panggilan muncul.");
+    }
+
+    public static void showIncomingCallNotification(Context context, String source,
+                                                    String title, String text) {
         createChannel(context);
 
         Intent intent = new Intent(context, CallActivity.class);
-        intent.putExtra(CallActivity.EXTRA_SOURCE, "notifikasi full-screen");
+        intent.putExtra(CallActivity.EXTRA_SOURCE, source);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent fullScreenIntent = PendingIntent.getActivity(
                 context, 0, intent,
@@ -44,8 +51,8 @@ public final class CallNotificationHelper {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_menu_call)
-                .setContentTitle("Jarvis memanggil")
-                .setContentText("Ketuk untuk menjawab — atau tunggu layar panggilan muncul.")
+                .setContentTitle(title)
+                .setContentText(text)
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setFullScreenIntent(fullScreenIntent, true)

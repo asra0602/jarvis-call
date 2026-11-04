@@ -52,6 +52,7 @@ export default async function handler(req, res) {
           count: list.length,
           lastId: last ? last.id : 0,
           lastFrom: last ? last.from : null,
+          lastType: last ? (last.type || 'chat') : null,
         });
       }
       const since = Number(req.query.since || 0);
@@ -66,12 +67,16 @@ export default async function handler(req, res) {
       const body = typeof req.body === 'object' && req.body ? req.body : {};
       const from = String(body.from || '').slice(0, 32);
       const text = String(body.text || '').slice(0, 2000);
+      // type: "chat" (default) or "call" — a "call" message from jarvis is a
+      // completion call: the app's background worker shows the call screen
+      // for it, so Asra gets "called" when work is done.
+      const type = body.type === 'call' ? 'call' : 'chat';
       if (!from || !text) {
         return res.status(400).json({ ok: false, error: 'from and text are required' });
       }
       const list = await load();
       const nextId = list.length ? Math.max(...list.map((m) => m.id)) + 1 : 1;
-      const message = { id: nextId, from, text, at: new Date().toISOString() };
+      const message = { id: nextId, from, text, type, at: new Date().toISOString() };
       list.push(message);
       const trimmed = list.slice(-200);
       await save(trimmed);

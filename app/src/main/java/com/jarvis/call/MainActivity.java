@@ -13,6 +13,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Layar utama v1.
@@ -55,6 +62,18 @@ public class MainActivity extends AppCompatActivity {
         chatButton.setOnClickListener(v ->
                 startActivity(new Intent(this, ChatActivity.class)));
 
+        // Worker latar belakang: cek backend tiap 15 menit (minimum Android)
+        // untuk pesan type="call" dari Jarvis, lalu tampilkan layar panggilan.
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+        PeriodicWorkRequest callCheck = new PeriodicWorkRequest.Builder(
+                CallCheckWorker.class, 15, TimeUnit.MINUTES)
+                .setConstraints(constraints)
+                .build();
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "jarvis-call-check", ExistingPeriodicWorkPolicy.KEEP, callCheck);
+
         refreshStatus();
     }
 
@@ -67,8 +86,9 @@ public class MainActivity extends AppCompatActivity {
     private void refreshStatus() {
         String status = "Izin notifikasi: "
                 + (hasNotificationPermission() ? "AKTIF" : "belum — ketuk Tes Notifikasi untuk meminta izin")
-                + "\n\nv1 debug — chat di app ini masih lokal, belum terhubung ke Muse. "
-                + "Trigger jarak jauh (FCM/backend) adalah tahap berikutnya.";
+                + "\n\nPanggilan selesai: AKTIF (worker cek backend tiap 15 menit; "
+                + "saat Jarvis mengirim pesan type=call, layar panggilan akan muncul). "
+                + "Bukan instan seperti FCM — itu tahap berikutnya kalau mau seketika.";
         statusText.setText(status);
     }
 
