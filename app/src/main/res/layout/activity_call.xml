@@ -1,63 +1,161 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- v2, gaya WhatsApp, font dibuat lebih kecil sesuai permintaan Asra:
+     urutan atas ke bawah: "incoming call" -> foto avatar -> Jarvis ->
+     "Your AI Assistant" -> status / timer. Tombol bawah gaya WhatsApp:
+     merah Tolak, hijau usap-ke-atas untuk menerima, dan Kirim pesan. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#0B141A"
     android:gravity="center_horizontal"
     android:orientation="vertical"
     android:padding="24dp">
 
     <TextView
+        android:id="@+id/call_incoming_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="24dp"
+        android:text="incoming call"
+        android:textColor="#8696A0"
+        android:textSize="13sp" />
+
+    <ImageView
+        android:id="@+id/caller_avatar"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_marginTop="24dp"
+        android:contentDescription="Avatar Jarvis sedang menelepon"
+        android:src="@drawable/caller_avatar" />
+
+    <TextView
+        android:id="@+id/caller_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:text="Jarvis"
-        android:textSize="36sp"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
         android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/caller_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Your AI Assistant"
+        android:textColor="#8696A0"
+        android:textSize="13sp" />
 
     <TextView
         android:id="@+id/call_state"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="12dp"
         android:text="Jarvis memanggil…"
-        android:textSize="18sp" />
+        android:textColor="#D9D9D9"
+        android:textSize="13sp" />
 
     <TextView
         android:id="@+id/call_timer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:text="00:00"
-        android:textSize="24sp" />
+        android:textColor="#FFFFFF"
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/call_source"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textSize="14sp" />
+        android:layout_marginTop="4dp"
+        android:textColor="#8696A0"
+        android:textSize="11sp" />
 
     <LinearLayout
+        android:id="@+id/ringing_controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/btn_decline"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:text="Tolak" />
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btn_accept"
+            <Button
+                android:id="@+id/btn_decline"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/btn_circle_red"
+                android:text="✕"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Tolak"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:text="Angkat" />
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btn_accept"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/btn_circle_green"
+                android:text="☎"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/accept_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="Usap ke atas untuk menerima"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btn_message"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/btn_circle_grey"
+                android:text="✉"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Kirim pesan"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -74,7 +172,8 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:text="Mute" />
+            android:text="Mute"
+            android:textSize="12sp" />
 
         <Button
             android:id="@+id/btn_speaker"
@@ -82,14 +181,16 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:text="Speaker" />
+            android:text="Speaker"
+            android:textSize="12sp" />
 
         <Button
             android:id="@+id/btn_end"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Akhiri" />
+            android:text="Akhiri"
+            android:textSize="12sp" />
     </LinearLayout>
 
     <Button
@@ -98,6 +199,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="Buka Chat"
+        android:textSize="12sp"
         android:visibility="gone" />
 
 </LinearLayout>

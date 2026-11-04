@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -38,7 +39,10 @@ public class CallActivity extends AppCompatActivity {
     private TextView sourceText;
     private Button acceptButton;
     private Button declineButton;
+    private Button messageButton;
+    private LinearLayout ringingControls;
     private LinearLayout inCallControls;
+    private float acceptDownY = 0f;
     private Button muteButton;
     private Button speakerButton;
     private Button endButton;
@@ -84,6 +88,8 @@ public class CallActivity extends AppCompatActivity {
         sourceText = findViewById(R.id.call_source);
         acceptButton = findViewById(R.id.btn_accept);
         declineButton = findViewById(R.id.btn_decline);
+        messageButton = findViewById(R.id.btn_message);
+        ringingControls = findViewById(R.id.ringing_controls);
         inCallControls = findViewById(R.id.in_call_controls);
         muteButton = findViewById(R.id.btn_mute);
         speakerButton = findViewById(R.id.btn_speaker);
@@ -94,7 +100,23 @@ public class CallActivity extends AppCompatActivity {
         sourceText.setText("Dipicu lewat: " + (source == null ? "tidak diketahui" : source));
 
         acceptButton.setOnClickListener(v -> acceptCall());
+        // Usap ke atas pada tombol hijau juga menerima panggilan (gaya WhatsApp).
+        // Ketukan biasa tetap bekerja lewat OnClickListener di atas.
+        acceptButton.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                acceptDownY = event.getY();
+            } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (acceptDownY - event.getY() > 100) {
+                    acceptCall();
+                }
+            }
+            return false;
+        });
         declineButton.setOnClickListener(v -> finishCall("Panggilan ditolak."));
+        messageButton.setOnClickListener(v -> {
+            startActivity(new Intent(this, ChatActivity.class));
+            finish();
+        });
         endButton.setOnClickListener(v -> finishCall("Panggilan berakhir."));
         openChatButton.setOnClickListener(v -> {
             startActivity(new Intent(this, ChatActivity.class));
@@ -168,6 +190,9 @@ public class CallActivity extends AppCompatActivity {
         stateText.setText("Dalam panggilan dengan Jarvis (simulasi)");
         acceptButton.setVisibility(View.GONE);
         declineButton.setVisibility(View.GONE);
+        if (ringingControls != null) {
+            ringingControls.setVisibility(View.GONE);
+        }
         inCallControls.setVisibility(View.VISIBLE);
         openChatButton.setVisibility(View.VISIBLE);
         timerHandler.post(timerRunnable);
@@ -182,6 +207,9 @@ public class CallActivity extends AppCompatActivity {
         timerText.setText("");
         acceptButton.setVisibility(View.GONE);
         declineButton.setVisibility(View.GONE);
+        if (ringingControls != null) {
+            ringingControls.setVisibility(View.GONE);
+        }
         inCallControls.setVisibility(View.GONE);
         openChatButton.setVisibility(View.VISIBLE);
     }
