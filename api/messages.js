@@ -39,6 +39,74 @@ async function save(list) {
   memoryMessages = list;
 }
 
+// Kirim FCM instan untuk pesan type="call". Kredensial service account
+// dibaca dari env FIREBASE_SERVICE_ACCOUNT_JSON (disetel di Vercel, bukan
+// di repo). JWT RS256 dibuat dengan Node crypto bawaan, tanpa dependensi.
+// Kalau env/token tidak ada atau FCM gagal, fungsi ini mengembalikan
+// false dan worker 15 menit tetap menjadi fallback — pesan tetap tersimpan.
+async function sendFcmCall(title, body) {
+  try {
+    const saJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    if (!saJson || !KV_URL || !KV_TOKEN) return false;
+    const sa = JSON.parse(saJson);
+    if (!sa.project_id || !sa.client_email || !sa.private_key) return false;
+    const tokenRes = await fetch(`${KV_URL}/get/jarvis-fcm-token`, {
+      headers: { Authorization: `Bearer ${KV_TOKEN}` },
+    });
+    const tokenData = await tokenRes.json();
+    const deviceToken = tokenData.result;
+    if (!deviceToken) return false;
+
+    const { createSign } = await import('node:crypto');
+    const b64url = (s) => Buffer.from(s).toString('base64url');
+    const now = Math.floor(Date.now() / 1000);
+    const header = b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+    const claims = b64url(JSON.stringify({
+      iss: sa.client_email,
+      sub: sa.client_email,
+      aud: 'https://oauth2.googleapis.com/token',
+      iat: now,
+      exp: now + 3600,
+      scope: 'https://www.googleapis.com/auth/firebase.messaging',
+    }));
+    const unsigned = `${header}.${claims}`;
+    const signer = createSign('RSA-SHA256');
+    signer.update(unsigned);
+    const signature = signer.sign(sa.private_key, 'base64url');
+    const jwt = `${unsigned}.${signature}`;
+
+    const oauthRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${encodeURIComponent(jwt)}`,
+    });
+    const oauth = await oauthRes.json();
+    if (!oauth.access_token) return false;
+
+    const fcmRes = await fetch(
+      `https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${oauth.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: {
+            token: deviceToken,
+            data: { type: 'call', title, body },
+            android: { priority: 'high' },
+            notification: { title, body },
+          },
+        }),
+      },
+    );
+    return fcmRes.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
@@ -80,7 +148,13 @@ export default async function handler(req, res) {
       list.push(message);
       const trimmed = list.slice(-200);
       await save(trimmed);
-      return res.status(200).json({ ok: true, message });
+      // Pesan type=call dari jarvis juga memicu FCM instan (worker 15 menit
+      // tetap jadi fallback kalau FCM tidak terkirim).
+      let fcm = null;
+      if (type === 'call' && from === 'jarvis') {
+        fcm = await sendFcmCall('Jarvis memanggil — pekerjaan selesai', text);
+      }
+      return res.status(200).json({ ok: true, message, fcm });
     }
 
     res.setHeader('Allow', 'GET, POST');

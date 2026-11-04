@@ -19,6 +19,8 @@ import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -73,6 +75,18 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
                 "jarvis-call-check", ExistingPeriodicWorkPolicy.KEEP, callCheck);
+
+        // Daftarkan token FCM perangkat ini ke backend, supaya backend
+        // bisa mengirim panggilan selesai instan lewat FCM.
+        try {
+            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult() != null) {
+                    JarvisMessagingService.sendTokenToBackend(task.getResult());
+                }
+            });
+        } catch (Exception ignored) {
+            // Tanpa FCM pun worker 15 menit tetap jalan sebagai fallback.
+        }
 
         refreshStatus();
     }
