@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "332396203100",
+    "project_id": "jarvis-call-9c5b0",
+    "storage_bucket": "jarvis-call-9c5b0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:332396203100:android:5901fa64efb98d2deb2a99",
+        "android_client_info": {
+          "package_name": "com.jarvis.call"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCz-ntS3-Zn4pSM4oXjCp4wvotllR4tvD8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
