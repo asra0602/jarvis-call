@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.os.Build;
+import android.provider.Settings;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -35,6 +36,14 @@ public final class CallNotificationHelper {
 
     public static void showIncomingCallNotification(Context context, String source,
                                                     String title, String text) {
+        // Overlay dulu: kalau izin "Tampil di atas aplikasi lain" sudah
+        // diberikan, buka CallActivity langsung di atas aplikasi apa pun
+        // yang sedang dibuka. Ini yang membuat panggilan menimpa layar,
+        // bukan cuma jadi notifikasi. Kalau izin belum ada / gagal dibuka,
+        // jatuh ke notifikasi full-screen seperti biasa.
+        if (tryDirectLaunch(context, source)) {
+            return;
+        }
         createChannel(context);
 
         Intent intent = new Intent(context, CallActivity.class);
@@ -62,6 +71,37 @@ public final class CallNotificationHelper {
                 .setVibrate(new long[]{0, 500, 500, 500});
 
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build());
+    }
+
+    /** Izin overlay ("Tampil di atas aplikasi lain") sudah diberikan? */
+    public static boolean hasOverlayPermission(Context context) {
+        if (Build.VERSION.SDK_INT < 23) {
+            return true;
+        }
+        return Settings.canDrawOverlays(context);
+    }
+
+    /**
+     * Coba buka CallActivity langsung (overlay). Mengembalikan true kalau
+     * activity berhasil diluncurkan. Aplikasi dengan izin SYSTEM_ALERT_WINDOW
+     * dikecualikan dari larangan membuka activity dari background, jadi
+     * cara ini jalan dari FCM service / worker sekalipun.
+     */
+    private static boolean tryDirectLaunch(Context context, String source) {
+        if (!hasOverlayPermission(context)) {
+            return false;
+        }
+        try {
+            Intent intent = new Intent(context, CallActivity.class);
+            intent.putExtra(CallActivity.EXTRA_SOURCE, source);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+            context.startActivity(intent);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public static void cancelNotification(Context context) {

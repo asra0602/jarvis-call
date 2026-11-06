@@ -9,6 +9,10 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- Overlay: supaya layar panggilan bisa menimpa aplikasi apa pun yang
+         sedang dibuka, bukan cuma jadi notifikasi. Izin ini diberikan
+         pengguna sekali di Pengaturan ("Tampil di atas aplikasi lain"). -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 

@@ -3,8 +3,10 @@ package com.jarvis.call;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -64,6 +66,28 @@ public class MainActivity extends AppCompatActivity {
         chatButton.setOnClickListener(v ->
                 startActivity(new Intent(this, ChatActivity.class)));
 
+        // Izin overlay: supaya layar panggilan bisa menimpa aplikasi apa
+        // pun. Dibuka lewat Pengaturan sistem; kalau sudah diberikan,
+        // tombol ini tidak perlu ditekan lagi.
+        Button overlayButton = findViewById(R.id.btn_overlay_permission);
+        overlayButton.setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= 23
+                    && !Settings.canDrawOverlays(this)) {
+                Intent intent = new Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+                Toast.makeText(this,
+                        "Aktifkan \"Izinkan tampil di atas aplikasi lain\" untuk Jarvis Call, lalu kembali ke sini.",
+                        Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this,
+                        "Izin overlay sudah aktif — panggilan akan menimpa aplikasi lain.",
+                        Toast.LENGTH_SHORT).show();
+            }
+            refreshStatus();
+        });
+
         // Worker latar belakang: cek backend tiap 15 menit (minimum Android)
         // untuk pesan type="call" dari Jarvis, lalu tampilkan layar panggilan.
         Constraints constraints = new Constraints.Builder()
@@ -100,9 +124,11 @@ public class MainActivity extends AppCompatActivity {
     private void refreshStatus() {
         String status = "Izin notifikasi: "
                 + (hasNotificationPermission() ? "AKTIF" : "belum — ketuk Tes Notifikasi untuk meminta izin")
-                + "\n\nPanggilan selesai: AKTIF (worker cek backend tiap 15 menit; "
-                + "saat Jarvis mengirim pesan type=call, layar panggilan akan muncul). "
-                + "Bukan instan seperti FCM — itu tahap berikutnya kalau mau seketika.";
+                + "\nIzin overlay (tampil di atas aplikasi lain): "
+                + (CallNotificationHelper.hasOverlayPermission(this) ? "AKTIF — panggilan menimpa aplikasi lain"
+                : "belum — ketuk tombol Izinkan Tampil di Atas Aplikasi Lain")
+                + "\n\nPanggilan selesai: AKTIF via FCM instan (worker 15 menit sebagai fallback). "
+                + "Saat Jarvis mengirim pesan type=call, layar panggilan akan muncul.";
         statusText.setText(status);
     }
 

@@ -40,6 +40,13 @@
         android:layout_marginTop="16dp"
         android:text="Buka Chat (lokal v1)" />
 
+    <Button
+        android:id="@+id/btn_overlay_permission"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Izinkan Tampil di Atas Aplikasi Lain" />
+
     <TextView
         android:id="@+id/status_text"
         android:layout_width="match_parent"

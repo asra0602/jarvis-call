@@ -73,7 +73,10 @@ public class CallActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_call);
 
-        // Tampil di atas lock screen, nyalakan layar.
+        // Tampil di atas lock screen, nyalakan layar, tetap menyala
+        // selama panggilan (penting saat dibuka sebagai overlay di atas
+        // aplikasi lain).
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (Build.VERSION.SDK_INT >= 27) {
             setShowWhenLocked(true);
             setTurnScreenOn(true);
